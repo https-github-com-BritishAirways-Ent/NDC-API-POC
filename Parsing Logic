@@ -1,0 +1,824 @@
+#Load in packages 
+##############################
+import pandas as pd
+from datetime import datetime
+import cadspy
+from sqlalchemy.types import NVARCHAR
+icw = cadspy.DatabaseConnection()
+import sqlalchemy
+from getpass import getuser, getpass
+import teradatasql as td
+import os.path
+import re
+import dask.dataframe as dd
+import time
+
+## Check one file to ensure loading/reading works
+##############################a
+#check to see the file is loaded in correctly
+myfile = open(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-ordercreate1a-info-2023-04-18",encoding="utf8")
+txt = myfile.read()
+print(txt[:10000])
+myfile.close()
+
+## Define and Run Function: Load in Log Files
+##############################
+#purpose: read file and return as text
+def read_file(i):
+    # where i is the file path
+    y = open(i,encoding="utf8")
+    z = y.read()
+    return z
+#Load all the relavent files
+##################################################### airshopping
+##### error
+airshopping_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\ndc-airshoppingb-error-2023-04-18")
+##### info
+airshopping_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\ndc-airshoppingb-info-2023-04-18")
+#################################################### offerprice
+##### error
+ndc_offerprice_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-offerprice1a-error-2023-04-18")
+ndc_offerprice_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-offerprice1a-error-2023-04-18")
+ndc_offerprice_error = ndc_offerprice_error_1 + ndc_offerprice_error_2
+##### info
+ndc_offerprice_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-offerprice1a-info-2023-04-18")
+ndc_offerprice_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-offerprice1a-info-2023-04-18")
+ndc_offerprice_info = ndc_offerprice_info_1 + ndc_offerprice_info_2
+#################################################### ordercreate
+##### error
+ndc_ordercreate_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-ordercreate1a-error-2023-04-18")
+ndc_ordercreate_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-ordercreate1a-error-2023-04-18")
+ndc_ordercreate_error = ndc_ordercreate_error_1 + ndc_ordercreate_error_2
+##### info
+ndc_ordercreate_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-ordercreate1a-info-2023-04-18")
+ndc_ordercreate_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-ordercreate1a-info-2023-04-18")
+ndc_ordercreate_info = ndc_ordercreate_info_1 + ndc_ordercreate_info_2
+#################################################### orderreshop
+##### error
+ndc_orderlist_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderlist1a-error-2023-04-18")
+ndc_orderlist_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderlist1a-error-2023-04-18")
+ndc_orderlist_error = ndc_orderlist_error_1 + ndc_orderlist_error_2
+##### info
+ndc_orderlist_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderlist1a-info-2023-04-18")
+ndc_orderlist_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\ndc-orderlist%2fcaws09-prl02%2fndc-orderlist1a-info-2023-04-18")
+ndc_orderlist_info = ndc_orderlist_info_1 + ndc_orderlist_info_2
+#################################################### orderchange
+##### error
+ndc_orderchange_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderchange1a-error-2023-04-18")
+ndc_orderchange_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderchange1a-error-2023-04-18")
+ndc_orderchange_error = ndc_orderchange_error_1 + ndc_orderchange_error_2
+##### info
+ndc_orderchange_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderchange1a-info-2023-04-18")
+ndc_orderchange_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderchange1a-info-2023-04-18")
+ndc_orderchange_info = ndc_orderchange_info_1 + ndc_orderchange_info_2
+#################################################### orderretrieve
+###### error
+ndc_orderretrieve_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderretrieve1a-error-2023-04-18")
+ndc_orderretrieve_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderretrieve1a-error-2023-04-18")
+ndc_orderretrieve_error = ndc_orderretrieve_error_1 + ndc_orderretrieve_error_2
+##### info
+ndc_orderretrieve_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderretrieve1a-info-2023-04-18")
+ndc_orderretrieve_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderretrieve1a-info-2023-04-18")
+ndc_orderretrieve_info = ndc_orderretrieve_info_1 + ndc_orderretrieve_info_2
+#################################################### orderreshop
+##### error
+ndc_orderreshop_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderreshop1a-error-2023-04-18")
+ndc_orderreshop_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderreshop1a-error-2023-04-18")
+ndc_orderreshop_error = ndc_orderreshop_error_1 + ndc_orderreshop_error_2
+##### info
+ndc_orderreshop_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-orderreshop1a-info-2023-04-18")
+ndc_orderreshop_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-orderreshop1a-info-2023-04-18")
+ndc_orderreshop_info = ndc_orderreshop_info_1 + ndc_orderreshop_info_2
+#################################################### servicelist
+##### error
+ndc_servicelist_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-servicelist1a-error-2023-04-18")
+ndc_servicelist_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-servicelist1a-error-2023-04-18")
+ndc_servicelist_error = ndc_servicelist_error_1 + ndc_servicelist_error_2
+##### info
+ndc_servicelist_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-servicelist1a-info-2023-04-18")
+ndc_servicelist_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-servicelist1a-info-2023-04-18")
+ndc_servicelist_info = ndc_servicelist_info_1 + ndc_servicelist_info_2
+#################################################### seatavailability
+##### error
+ndc_seatavailability_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-seatavailability1a-error-2023-04-18")
+ndc_seatavailability_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-seatavailability1a-error-2023-04-18")
+ndc_seatavailability_error = ndc_seatavailability_error_1 + ndc_seatavailability_error_2
+##### info
+ndc_seatavailability_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-seatavailability1a-info-2023-04-18")
+ndc_seatavailability_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-seatavailability1a-info-2023-04-18")
+ndc_seatavailability_info = ndc_seatavailability_info_1 + ndc_seatavailability_info_2
+#################################################### ordercancel
+##### error
+ndc_ordercancel_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-ordercancel1a-error-2023-04-18")
+ndc_ordercancel_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-ordercancel1a-error-2023-04-18")
+ndc_ordercancel_error = ndc_ordercancel_error_1 + ndc_ordercancel_error_2
+##### info
+ndc_ordercancel_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl01%2fndc-ordercancel1a-info-2023-04-18")
+ndc_ordercancel_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fndc-ordercancel1a-info-2023-04-18")
+ndc_ordercancel_info = ndc_ordercancel_info_1 + ndc_ordercancel_info_2
+#################################################### ndc-ocmp
+##### error
+ndc_ocmp_error_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl01%2fndc-ocmp1a-error-2023-04-18")
+ndc_ocmp_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl02%2fndc-ocmp1a-error-2023-04-18")
+ndc_ocmp_error = ndc_ocmp_error_1 + ndc_ocmp_error_2
+##### info
+ndc_ocmp_info_1 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl01%2fndc-ocmp1a-info-2023-04-18")
+ndc_ocmp_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl02%2fndc-ocmp1a-info-2023-04-18")
+ndc_ocmp_info = ndc_ocmp_info_1 + ndc_ocmp_info_2
+#################################################### evm-ocem
+##### error
+evm_ocem_04_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl02%2fevm-ocem1a-error-2023-04-18")
+evm_ocem_09_error_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fevm-ocem1a-error-2023-04-18")
+evm_ocem_error = evm_ocem_04_error_2 + evm_ocem_09_error_2
+##### info
+evm_ocem_04_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws04-prl02%2fevm-ocem1a-info-2023-04-18")
+evm_ocem_09_info_2 = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\caws09-prl02%2fevm-ocem1a-info-2023-04-18")
+evm_ocem_info = evm_ocem_04_info_2 + evm_ocem_09_info_2
+#################################################### cust-ibc
+##### error
+cust_ibc_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\cust-ibcb-error-2023-04-18")
+##### info
+cust_ibc_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\cust-ibcb-info-2023-04-18")
+#################################################### sse-ofm
+##### error
+sse_ofm_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\sse-ofmb-error-2023-04-18")
+##### info
+sse_ofm_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\sse-ofmb-info-2023-04-18")
+#################################################### asm-ema
+##### error
+asm_ema_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\asm-emab-error-2023-04-18")
+##### info
+asm_ema_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\asm-emab-info-2023-04-18")
+#################################################### pas-pinf
+##### error
+pas_pinf_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\pas-pinfb-error-2023-04-18")
+##### info
+pas_pinf_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\pas-pinfb-info-2023-04-18")
+#################################################### other services
+##### amadeus
+amadeus_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\amadeus-b-info-2023-04-18")
+###### asm-agm
+asm_agm_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\asm-agmb-info-2023-04-18")
+###### pym-csm
+pym_csm_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\pym-csmb-info-2023-04-18")
+###### rdu-curr
+rdu_curr_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\rdu-currb-info-2023-04-18")
+###### rdu-ilm
+rdu_ilm_info = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\rdu-ilmb-info-2023-04-18")
+###### sse-pas
+sse_pas_error = read_file(r"C:\Users\u193241\OneDrive - British Airways Plc\Excel\Snowflake - NDC API\sse-pasb-error-2023-04-18")                
+
+## Define and Run: Split Log File by Timestamp
+##############################
+#purpose: take text file and return as list, split at at beginning of timestamp
+def time_split(i):
+    # where i is the text file
+    file_length = len(i)
+    matches = []
+    start = []
+    end = []
+    result_length = 0
+    all_info = []
+    # loop to find & append all the timestamps (JUST the matched timstamps)
+    for m in re.finditer(r'2023-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}',i):
+        matches.append(m.group())
+        start.append(m.start())
+        end.append(m.end())
+    # loop to find & append all the matches (based on the beginnings of the timestamps)
+    for n in range(len(matches)):
+        #if this is the last match, we go from the tmstp to the end of the text
+        if n == len(matches) - 1:
+            info = i[start[n]:]
+        #else we go to the beg of the next tmstp
+        else:
+            info = i[start[n]:start[n+1]]
+        all_info.append(info)
+        result_length += len(info)
+    
+    #print(file_length)
+    #print(result_length)
+    if file_length == result_length:
+        print('MATCH length')
+    else:
+        print('ERROR, orig is {a} and new is {b}'.format(a=file_length,b=result_length))
+    return all_info
+##################################################### airshopping
+print('airshopping')
+##### error
+airshopping_error_list = time_split(airshopping_error)
+##### info
+airshopping_info_list = time_split(airshopping_info)
+#################################################### offerprice
+print('offerprice')
+##### error
+ndc_offerprice_error_list = time_split(ndc_offerprice_error)
+##### info
+ndc_offerprice_info_list = time_split(ndc_offerprice_info)
+#################################################### ordercreate
+print('ordercreate')
+##### error
+ndc_ordercreate_error_list = time_split(ndc_ordercreate_error)
+##### info
+ndc_ordercreate_info_list = time_split(ndc_ordercreate_info)
+#################################################### orderreshop
+print('orderreshop')
+##### error
+ndc_orderlist_error_list = time_split(ndc_orderlist_error)
+##### info
+ndc_orderlist_info_list = time_split(ndc_orderlist_info)
+#################################################### orderchange
+print('orderchange')
+##### error
+ndc_orderchange_error_list = time_split(ndc_orderchange_error)
+##### info
+ndc_orderchange_info_list = time_split(ndc_orderchange_info)
+#################################################### orderretrieve
+print('orderretrieve')
+###### error
+ndc_orderretrieve_error_list = time_split(ndc_orderretrieve_error)
+##### info
+ndc_orderretrieve_info_list = time_split(ndc_orderretrieve_info)
+#################################################### orderreshop
+print('orderreshop')
+##### error
+ndc_orderreshop_error_list = time_split(ndc_orderreshop_error)
+##### info
+ndc_orderreshop_info_list = time_split(ndc_orderreshop_info)
+#################################################### servicelist
+print('servicelist')
+##### error
+ndc_servicelist_error_list = time_split(ndc_servicelist_error)
+##### info
+ndc_servicelist_info_list = time_split(ndc_servicelist_info)
+#################################################### seatavailability
+print('seatavailability')
+##### error
+ndc_seatavailability_error_list = time_split(ndc_seatavailability_error)
+##### info
+ndc_seatavailability_info_list = time_split(ndc_seatavailability_info)
+#################################################### ordercancel
+print('ordercancel')
+##### error
+ndc_ordercancel_error_list = time_split(ndc_ordercancel_error)
+##### info
+ndc_ordercancel_info_list = time_split(ndc_ordercancel_info)
+#################################################### ndc-ocmp
+print('ndc-ocmp')
+##### error
+ndc_ocmp_error_list = time_split(ndc_ocmp_error)
+##### info
+ndc_ocmp_info_list = time_split(ndc_ocmp_info)
+#################################################### evm-ocem
+print('evm-ocem')
+##### error
+evm_ocem_error_list = time_split(evm_ocem_error)
+##### info
+evm_ocem_info_list = time_split(evm_ocem_info)
+#################################################### cust-ibc
+print('cust-ibc')
+##### error
+cust_ibc_error_list = time_split(cust_ibc_error)
+##### info
+cust_ibc_info_list = time_split(cust_ibc_info)
+#################################################### sse-ofm
+print('sse-ofm')
+##### error
+sse_ofm_error_list = time_split(sse_ofm_error)
+##### info
+sse_ofm_info_list = time_split(sse_ofm_info)
+#################################################### asm-ema
+print('asm-ema')
+##### error
+asm_ema_error_list = time_split(asm_ema_error)
+##### info
+asm_ema_info_list = time_split(asm_ema_info)
+#################################################### pas-pinf
+print('pas-pinf')
+##### error
+pas_pinf_error_list = time_split(pas_pinf_error)
+##### info
+pas_pinf_info_list = time_split(pas_pinf_info)
+#################################################### other services
+##### amadeus
+print('amadeus')
+amadeus_info_list = time_split(amadeus_info)
+###### asm-agm
+print('asm-agm')
+asm_agm_info_list = time_split(asm_agm_info)
+###### pym-csm
+print('pym-csm')
+pym_csm_info_list = time_split(pym_csm_info)
+###### rdu-curr
+print('rdu-curr')
+rdu_curr_info_list = time_split(rdu_curr_info)
+###### rdu-ilm
+print('rdu-ilm')
+rdu_ilm_info_list = time_split(rdu_ilm_info)
+###### sse-pas
+print('sse-pas')
+sse_pas_error_list = time_split(sse_pas_error)
+
+## Define and Run: Split Each Timestamp 'item' into components
+##############################
+# function that takes the parsed list and sorts into types of items
+#now filter out to keep only realalvent info & sort
+def Tmstmp(i):
+    # column 1: TIMESTAMP
+    a = re.search(r'2023-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}',i)
+    tmstmp = a.group()
+        
+    return tmstmp
+##############################################################################################################
+def Tx_id(i):
+    # column 2: TRANSACTION_ID
+    b = re.search(r'txId=tx-[a-z0-9\-]+|txid=tx-[a-z0-9\-]+',i)
+    if b:
+        tx_id = b.group()[5:]
+    else :
+        tx_id = 'N/A'
+            
+    # now create DF!!
+    return tx_id
+##############################################################################################################
+def Typ(i):        
+    # colmun 3: TYPE (IE REQUEST)
+    c = re.search('\[TYPE\+[A-Z]+',i)
+    if c:
+        typ = c.group()[1:]
+        return typ.strip()
+    else:
+        # USE THE IDENTIFIER
+        d = re.search('INFO [\s\.A-Za-z0-9\/]+',i)
+        if d:
+                e = d.group()[5:]
+                f = e.rindex('.')
+                return e[f+1:].strip()
+        else:
+            d = re.search('WARN [\s\.A-Za-z0-9\/\-]+',i)
+            if d:
+                e = d.group()[5:]
+                f = e.rindex('.')
+                return e[f+1:].strip()
+            else:
+                d = re.search('ERROR [\s\.A-Za-z0-9\/\-]+',i)
+                e = d.group()[6:]
+                f = e.rindex('.')
+                return e[f+1:].strip()
+    
+    
+##############################################################################################################
+def Identifier(i):     
+    # column 4: IDENTIFIER
+    d = re.search('INFO [\s\.A-Za-z0-9\/\-]+',i)
+    if d:
+            return d.group()[5:]
+    else:
+        d = re.search('WARN [\s\.A-Za-z0-9\/\-]+',i)
+        if d:
+            return d.group()[5:]
+        else:
+            d = re.search('ERROR [\s\.A-Za-z0-9\/\-]+',i)
+            return d.group()[6:]
+##############################################################################################################
+def Detail(i):     
+    # column 4: IDENTIFIER
+    d = re.search('INFO [\s\.A-Za-z0-9\/\-]+',i)
+    if d:
+            x = d.group()[5:]
+    else:
+        d = re.search('WARN [\s\.A-Za-z0-9\/\-]+',i)
+        if d:
+            x = d.group()[5:]
+        else:
+            d = re.search('ERROR [\s\.A-Za-z0-9\/\-]+',i)
+            x = d.group()[6:]
+            
+    m = re.search('LoggingInterception\./[A-Za-z\-]+/',x)
+    if m:
+        return  m.group()[21:-1]
+    else:
+        p = x[x.rindex('.')+1:]
+        #check if the detail is actually enough information
+        if re.search('[a-z]+-[a-z]+',p):
+            return p
+        else:
+            return x.strip()
+# function that takes the parsed list and sorts into types of items
+#now filter out to keep only realalvent info & sort
+def sorting_df_split(x):
+    tmstmp = []
+    tx_id = []
+    typ = []
+    identifier = []
+    detail = []
+    text = []
+    z = 1
+    for i in x:
+        if z % 1000 == 0:
+            print('{a} done'.format(a=z))
+        #print(i)
+        tmstmp.append(Tmstmp(i))
+        tx_id.append(Tx_id(i))
+        typ.append(Typ(i))
+        identifier.append(Identifier(i))
+        detail.append(Detail(i))
+        text.append(re.sub('\n', '', i))   
+        z += 1
+        
+    # now create DF!!
+    df = pd.DataFrame(list(zip(tmstmp,tx_id,typ,identifier,detail,text)), columns = ['Timestamp', 'Trans_ID', 'Type','Identifier','Detail','Full Text'])
+    return df    
+##################################################### airshopping
+print('airshopping')
+print('ERROR')
+##### error
+airshopping_error_sort = sorting_df_split(airshopping_error_list)
+##### info
+print('INFO')
+airshopping_info_sort = sorting_df_split(airshopping_info_list)
+#################################################### offerprice
+print('offerprice')
+print('ERROR')
+##### error
+ndc_offerprice_error_sort = sorting_df_split(ndc_offerprice_error_list)
+print('INFO')
+##### info
+ndc_offerprice_info_sort = sorting_df_split(ndc_offerprice_info_list)
+#################################################### ordercreate
+print('ordercreate')
+print('ERROR')
+##### error
+ndc_ordercreate_error_sort = sorting_df_split(ndc_ordercreate_error_list)
+print('INFO')
+##### info
+ndc_ordercreate_info_sort = sorting_df_split(ndc_ordercreate_info_list)
+#################################################### orderreshop
+print('orderreshop')
+print('ERROR')
+##### error
+ndc_orderlist_error_sort = sorting_df_split(ndc_orderlist_error_list)
+print('INFO')
+##### info
+ndc_orderlist_info_sort = sorting_df_split(ndc_orderlist_info_list)
+#################################################### orderchange
+print('orderchange')
+print('ERROR')
+##### error
+ndc_orderchange_error_sort = sorting_df_split(ndc_orderchange_error_list)
+print('INFO')
+##### info
+ndc_orderchange_info_sort = sorting_df_split(ndc_orderchange_info_list)
+#################################################### orderretrieve
+print('orderretrieve')
+print('ERROR')
+###### error
+ndc_orderretrieve_error_sort = sorting_df_split(ndc_orderretrieve_error_list)
+print('INFO')
+##### info
+ndc_orderretrieve_info_sort = sorting_df_split(ndc_orderretrieve_info_list)
+#################################################### orderreshop
+print('orderreshop')
+print('ERROR')
+##### error
+ndc_orderreshop_error_sort = sorting_df_split(ndc_orderreshop_error_list)
+print('INFO')
+##### info
+ndc_orderreshop_info_sort = sorting_df_split(ndc_orderreshop_info_list)
+#################################################### servicelist
+print('servicelist')
+print('ERROR')
+##### error
+ndc_servicelist_error_sort = sorting_df_split(ndc_servicelist_error_list)
+print('INFO')
+##### info
+ndc_servicelist_info_sort = sorting_df_split(ndc_servicelist_info_list)
+#################################################### seatavailability
+print('seatavailability')
+print('ERROR')
+##### error
+ndc_seatavailability_error_sort = sorting_df_split(ndc_seatavailability_error_list)
+print('INFO')
+##### info
+ndc_seatavailability_info_sort = sorting_df_split(ndc_seatavailability_info_list)
+#################################################### ordercancel
+print('ordercancel')
+print('ERROR')
+##### error
+ndc_ordercancel_error_sort = sorting_df_split(ndc_ordercancel_error_list)
+print('INFO')
+##### info
+ndc_ordercancel_info_sort = sorting_df_split(ndc_ordercancel_info_list)
+#################################################### ndc-ocmp
+print('ndc-ocmp')
+print('ERROR')
+##### error
+ndc_ocmp_error_sort = sorting_df_split(ndc_ocmp_error_list)
+print('INFO')
+##### info
+ndc_ocmp_info_sort = sorting_df_split(ndc_ocmp_info_list)
+#################################################### evm-ocem
+print('evm-ocem')
+print('ERROR')
+##### error
+evm_ocem_error_sort = sorting_df_split(evm_ocem_error_list)
+print('INFO')
+##### info
+evm_ocem_info_sort = sorting_df_split(evm_ocem_info_list)
+#################################################### cust-ibc
+print('cust-ibc')
+##### error
+cust_ibc_error_sort = sorting_df_split(cust_ibc_error_list)
+print('INFO')
+##### info
+cust_ibc_info_sort = sorting_df_split(cust_ibc_info_list)
+#################################################### sse-ofm
+print('sse-ofm')
+print('ERROR')
+##### error
+sse_ofm_error_sort = sorting_df_split(sse_ofm_error_list)
+print('INFO')
+##### info
+sse_ofm_info_sort = sorting_df_split(sse_ofm_info_list)
+#################################################### asm-ema
+print('asm-ema')
+print('ERROR')
+##### error
+asm_ema_error_sort = sorting_df_split(asm_ema_error_list)
+print('INFO')
+##### info
+asm_ema_info_sort = sorting_df_split(asm_ema_info_list)
+#################################################### pas-pinf
+print('pas-pinf')
+print('ERROR')
+##### error
+pas_pinf_error_sort = sorting_df_split(pas_pinf_error_list)
+print('INFO')
+##### info
+pas_pinf_info_sort = sorting_df_split(pas_pinf_info_list)
+#################################################### other services
+print('INFO')
+##### amadeus
+print('amadeus')
+amadeus_info_sort = sorting_df_split(amadeus_info_list)
+###### asm-agm
+print('asm-agm')
+asm_agm_info_sort = sorting_df_split(asm_agm_info_list)
+###### pym-csm
+print('pym-csm')
+pym_csm_info_sort = sorting_df_split(pym_csm_info_list)
+###### rdu-curr
+print('rdu-curr')
+rdu_curr_info_sort = sorting_df_split(rdu_curr_info_list)
+###### rdu-ilm
+print('rdu-ilm')
+rdu_ilm_info_sort = sorting_df_split(rdu_ilm_info_list)
+###### sse-pas
+print('sse-pas')
+sse_pas_error_sort = sorting_df_split(sse_pas_error_list)
+
+## Create smaller DF with 'important' components only
+##############################
+components = ['TYPE+EXTERNALSERVICEENTRY','TYPE+EXTERNALSERVICEEXIT','TYPE+REQUEST','TYPE+RESPONSE','TYPE+STAT']
+
+airshopping = airshopping_info_sort.loc[airshopping_info_sort["Type"].isin(components)]
+ndc_offerprice = ndc_offerprice_info_sort.loc[ndc_offerprice_info_sort["Type"].isin(components)]
+ndc_ordercreate = ndc_ordercreate_info_sort.loc[ndc_ordercreate_info_sort["Type"].isin(components)]
+ndc_orderlist = ndc_orderlist_info_sort.loc[ndc_orderlist_info_sort["Type"].isin(components)]
+ndc_orderchange = ndc_orderchange_info_sort.loc[ndc_orderchange_info_sort["Type"].isin(components)] 
+ndc_orderretrieve = ndc_orderretrieve_info_sort.loc[ndc_orderretrieve_info_sort["Type"].isin(components)]
+ndc_orderreshop = ndc_orderreshop_info_sort.loc[ndc_orderreshop_info_sort["Type"].isin(components)]
+ndc_servicelist = ndc_servicelist_info_sort.loc[ndc_servicelist_info_sort["Type"].isin(components)]
+ndc_seatavailability = ndc_seatavailability_info_sort.loc[ndc_seatavailability_info_sort["Type"].isin(components)]
+ndc_ordercancel = ndc_ordercancel_info_sort.loc[ndc_ordercancel_info_sort["Type"].isin(components)]
+ndc_ocmp = ndc_ocmp_info_sort.loc[ndc_ocmp_info_sort["Type"].isin(components)]
+evm_ocem = evm_ocem_info_sort.loc[evm_ocem_info_sort["Type"].isin(components)]
+cust_ibc = cust_ibc_info_sort.loc[cust_ibc_info_sort["Type"].isin(components)] 
+sse_ofm = sse_ofm_info_sort.loc[sse_ofm_info_sort["Type"].isin(components)]
+asm_ema = asm_ema_info_sort.loc[asm_ema_info_sort["Type"].isin(components)]
+pas_pinf = pas_pinf_info_sort.loc[pas_pinf_info_sort["Type"].isin(components)]
+amadeus = amadeus_info_sort.loc[amadeus_info_sort["Type"].isin(components)]
+asm_agm = asm_agm_info_sort.loc[asm_agm_info_sort["Type"].isin(components)]
+pym_csm = pym_csm_info_sort.loc[pym_csm_info_sort["Type"].isin(components)]
+rdu_curr = rdu_curr_info_sort.loc[rdu_curr_info_sort["Type"].isin(components)]
+rdu_ilm = rdu_ilm_info_sort.loc[rdu_ilm_info_sort["Type"].isin(components)]
+
+## Create analysis-friendly table for each component type
+##############################
+############################### FXN TO FIND PNR
+def PNR(x):
+    x = str(x)
+    a = re.search('''OrderID.*[A-Z0-9]{6}''',x)
+    if a:
+        a = a.group()
+        b = re.search('[A-Z0-9]{6}',a)
+        pnr = b.group()
+    else:
+        pnr = 'N/A'
+    return pnr
+############################### FXN TO FIND PNR
+def OfferID(x):
+    x = str(x)
+    a = re.search('''OF-[a-z0-9\-]+''',x)
+    if a:
+        a = a.group()
+    else:
+        a = 'N/A'
+    return a
+############################### FXN TO FIND PNR
+def ResponseID(x):
+    x = str(x)
+    a = re.search('''[a-z0-9]{3}\.tx[0-9a-z\-]+''',x)
+    if a:
+        a = a.group()
+    else:
+        a = 'N/A'
+    return a
+############################### FXN TO FIND Payload
+def Payload(x):
+    x = str(x)
+    a = re.search('''\[payload=.*>\]''',x)
+    if a:
+        payload = a.group()
+    else:
+        payload = 'N/A'
+    return payload
+############################### FXN TO FIND Result
+def Result(x):
+    x = str(x)
+    a = re.search('''\[TYPE\+RESPONSE\|responseCode=[0-9]{3}\]''',x)
+    if a:
+        result = a.group()[28:31]
+    else:
+        result = 'N/A'
+    return result
+
+## FXN TO CLEAN AIRSHOPPING
+##############################
+def clean_airshopping(name,tbl):
+    file = []
+    col0 = []
+    col1 = []
+    col2 = []
+    col3 = []
+    col4 = []
+
+    #iterate through components of the DF
+    for i in range(len(tbl)):
+        x = tbl.loc[i]
+        #only certain components
+        if x['Type'] in ('TYPE+REQUEST','TYPE+RESPONSE','TYPE+EXTERNALSERVICEENTRY','TYPE+EXTERNALSERVICEEXIT'):    
+            file.append(name)
+            #type
+            col0.append( x['Type'])
+            #transaction ID
+            col1.append( x['Timestamp'])
+            #timestamp
+            col2.append(x['Trans_ID'])
+            #ResponseID
+            col3.append(ResponseID(x['Full Text']))
+            #external service called
+            col4.append(x['Detail'])
+        else:
+            pass
+        
+    new_df = pd.DataFrame(list(zip(file,col0,col1,col2,col3,col4)), columns = ['Service','Type','Timestamp', 'Trans_ID', 'ResponseID','Detail'])
+    return new_df
+link_airshopping = clean_airshopping('AirShopping',airshopping_info_sort)
+
+## FXN TO CLEAN OFFERPRICE
+##############################
+############################### FXN TO CLEAN OFFERPRICE
+def clean_offerprice(name,tbl):
+    file = []
+    col0 = []
+    col1 = []
+    col2 = []
+    col3 = []
+    col4 = []
+    col5 = []
+
+    #iterate through components of the DF
+    for i in range(len(tbl)):
+        x = tbl.loc[i]
+        #only certain components
+        if x['Type'] in ('TYPE+REQUEST','TYPE+RESPONSE','TYPE+EXTERNALSERVICEENTRY','TYPE+EXTERNALSERVICEEXIT'):    
+            file.append(name)
+            #type
+            col0.append( x['Type'])
+            #transaction ID
+            col1.append( x['Timestamp'])
+            #timestamp
+            col2.append(x['Trans_ID'])
+            #ResponseID
+            col3.append(ResponseID(x['Full Text']))
+            #OfferID
+            col4.append(OfferID(x['Full Text']))
+            #external service called
+            col5.append(x['Detail'])
+        else:
+            pass
+        
+    new_df = pd.DataFrame(list(zip(file,col0,col1,col2,col3,col4,col5)), columns = ['Service','Type','Timestamp', 'Trans_ID', 'ResponseID','OfferID','Detail'])
+    return new_df
+link_offerprice = clean_offerprice('OfferPrice',ndc_offerprice_info_sort)
+
+## FXN TO CLEAN ORDERCREATE
+##############################
+############################### FXN TO CLEAN ORDERCREATE
+def clean_ordercreate(name,tbl):
+    file = []
+    col0 = []
+    col1 = []
+    col2 = []
+    col3 = []
+    col4 = []
+    col5 = []
+
+    #iterate through components of the DF
+    for i in range(len(tbl)):
+        x = tbl.loc[i]
+        #only certain components
+        if x['Type'] in ('TYPE+REQUEST','TYPE+RESPONSE','TYPE+STAT','TYPE+EXTERNALSERVICEENTRY','TYPE+EXTERNALSERVICEEXIT'):    
+            file.append(name)
+            #type
+            col0.append( x['Type'])
+            #transaction ID
+            col1.append( x['Timestamp'])
+            #timestamp
+            col2.append(x['Trans_ID'])
+            #OfferID
+            col3.append(OfferID(x['Full Text']))
+            #PNR
+            col4.append(PNR(x['Full Text']))
+            #external service called
+            col5.append(x['Detail'])
+        else:
+            pass
+        
+    new_df = pd.DataFrame(list(zip(file,col0,col1,col2,col3,col4,col5)), columns = ['Service','Type','Timestamp', 'Trans_ID', 'OfferID','PNR','Detail'])
+    return new_df
+
+
+## SAMPLE CODE FOR CLEANING ALL DATA
+########################################
+def clean_table(name,tbl):
+    file = []
+    col0 = []
+    col1 = []
+    col2 = []
+    col3 = []
+    col4 = []
+    col5 = []
+    col6 = []
+    col7 = []
+    col8 = []
+    #iterate through components of the DF
+    for i in range(len(tbl)):
+        x = tbl.loc[i]
+        #only certain components
+        if x['Type'] in ('TYPE+REQUEST','TYPE+RESPONSE','TYPE+EXTERNALSERVICEENTRY','TYPE+EXTERNALSERVICEEXIT'):    
+            file.append(name)
+            #type
+            col0.append( x['Type'])
+            #transaction ID
+            col1.append( x['Timestamp'])
+            #timestmap
+            col2.append(x['Trans_ID'])
+            #pnr
+            col3.append(PNR(x['Full Text']))
+            #payload
+            col4.append(Payload(x['Full Text']))
+            #result code 
+            col5.append(Result(x['Full Text']))
+            #external service called
+            col6.append(x['Detail'])
+            #additional info from external service (?)
+            col7.append('TBD')
+            #offerID
+            col8.append(OfferID(x['Full Text']))
+        else:
+            pass
+        
+    new_df = pd.DataFrame(list(zip(file,col0,col1,col2,col3,col4,col5,col6,col7,col8)), columns = ['Service','Type','Timestamp', 'Trans_ID', 'PNR','Payload','Result','Detail','Other','Offer_ID'])
+    return new_df
+airshopping = clean_table('AirShopping',airshopping_info_sort)
+ndc_offerprice = clean_table('NDC OfferPrice',ndc_offerprice_info_sort)
+ndc_ordercreate = clean_table('NDC OrderCreate',ndc_ordercreate_info_sort)
+ndc_orderlist = clean_table('NDC OrderList',ndc_orderlist_info_sort)
+ndc_orderchange = clean_table('NDC OrderChange',ndc_orderchange_info_sort) 
+ndc_orderretrieve = clean_table('NDC OrderRetrieve',ndc_orderretrieve_info_sort)
+ndc_orderreshop = clean_table('NDC OrderReshop',ndc_orderreshop_info_sort)
+ndc_servicelist = clean_table('NDC ServiceList',ndc_servicelist_info_sort)
+ndc_seatavailability = clean_table('NDC SeatAvailability',ndc_seatavailability_info_sort)
+ndc_ordercancel = clean_table('NDC OrderCancel',ndc_ordercancel_info_sort)
+ndc_ocmp = clean_table('NDC OCMP',ndc_ocmp_info_sort)
+evm_ocem = clean_table('EVM OCEM',evm_ocem_info_sort)
+cust_ibc = clean_table('CUST IBC',cust_ibc_info_sort)
+sse_ofm = clean_table('SSE OFM',sse_ofm_info_sort)
+asm_ema = clean_table('ASM EMA',asm_ema_info_sort)
+pas_pinf = clean_table('PAS PINF',pas_pinf_info_sort)
+amadeus = clean_table('AMADEUS',amadeus_info_sort)
+asm_agm = clean_table('ASM AGM',asm_agm_info_sort)
+pym_csm = clean_table('PYM CSM',pym_csm_info_sort)
+rdu_curr = clean_table('RDU CURR',rdu_curr_info_sort)
+rdu_ilm = clean_table('RDU ILN',rdu_ilm_info_sort)
